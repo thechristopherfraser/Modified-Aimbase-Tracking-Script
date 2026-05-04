@@ -62,22 +62,22 @@ Aimbase.Analytics = (function (awaConfig) {
      */
     var setServiceUrl = function () {
         var el = getScriptElement();
-        
+
         // Check for explicit data-serviceurl attribute first
         var explicitUrl = getScriptElementVariable('data-serviceurl');
         if (explicitUrl) {
             config.serviceAddress = explicitUrl;
             return;
         }
-        
-        // Try to extract from script src (works when hosted on AimBase domain)
+
+        // Try to extract from script src (only works when hosted on AimBase domain)
         var re = el.src.match(/^http(s)?:\/\/[a-z0-9-\.]+(\.[a-z0-9-]+)*?(:[0-9]+)?(\/)?/i);
-        if (re != null && re[0].indexOf('raw.githubusercontent') === -1) {
+        if (re != null && re[0].indexOf('ws.aimbase.com') !== -1) {
             config.serviceAddress = re[0];
             return;
         }
-        
-        // Default to AimBase service if hosting elsewhere
+
+        // Default to AimBase service for all other hosting locations
         config.serviceAddress = 'https://ws.aimbase.com/';
     };
 
