@@ -56,14 +56,29 @@ Aimbase.Analytics = (function (awaConfig) {
     };
 
     /**
-     * Extracts the service URL from the script source
+     * Extracts the service URL from script attribute or src
+     * Checks data-serviceurl first, then tries to extract from src
+     * Falls back to default AimBase service URL if needed
      */
     var setServiceUrl = function () {
         var el = getScriptElement();
-        var re = el.src.match(/^http(s)?:\/\/[a-z0-9-\.]+(\.[a-z0-9-]+)*?(:[0-9]+)?(\/)?/i);
-        if (re != null) {
-            config.serviceAddress = re[0];
+        
+        // Check for explicit data-serviceurl attribute first
+        var explicitUrl = getScriptElementVariable('data-serviceurl');
+        if (explicitUrl) {
+            config.serviceAddress = explicitUrl;
+            return;
         }
+        
+        // Try to extract from script src (works when hosted on AimBase domain)
+        var re = el.src.match(/^http(s)?:\/\/[a-z0-9-\.]+(\.[a-z0-9-]+)*?(:[0-9]+)?(\/)?/i);
+        if (re != null && re[0].indexOf('raw.githubusercontent') === -1) {
+            config.serviceAddress = re[0];
+            return;
+        }
+        
+        // Default to AimBase service if hosting elsewhere
+        config.serviceAddress = 'https://ws.aimbase.com/';
     };
 
     // ========================================================================
