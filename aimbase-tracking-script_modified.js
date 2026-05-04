@@ -413,15 +413,20 @@ Aimbase.Analytics = (function (awaConfig) {
     /**
      * Extracts all tracking parameters (UTM + custom)
      * Combines URL params, WST params, and referrer
+     * Prioritizes session cookie values over URL parameters
      */
     var getParameters = function () {
         var parmsObject = getWstQueryStringValues();
         parmsObject.event = getParameterByName('event');
-        parmsObject.medium = getParameterByName('utm_medium');
-        parmsObject.campaign = getParameterByName('utm_campaign');
-        parmsObject.source = getParameterByName('utm_source');
-        parmsObject.term = getParameterByName('utm_term');
-        parmsObject.content = getParameterByName('utm_content');
+        
+        // Prioritize session cookie values over URL parameters
+        // This ensures UTM values persist across pages in the same session
+        parmsObject.medium = currentSessionCookie.medium || getParameterByName('utm_medium');
+        parmsObject.campaign = currentSessionCookie.campaign || getParameterByName('utm_campaign');
+        parmsObject.source = currentSessionCookie.source || getParameterByName('utm_source');
+        parmsObject.term = currentSessionCookie.term || getParameterByName('utm_term');
+        parmsObject.content = currentSessionCookie.content || getParameterByName('utm_content');
+        
         parmsObject.ref = getReferrer();
         return parmsObject;
     };
@@ -896,6 +901,8 @@ Aimbase.Capture = (function (awaConfig) {
          * Automatically includes stored UTM parameters from session cookie
          */
         SendLeadForm: function (leadType) {
+            console.log('AimBase Debug - SendLeadForm called with leadType:', leadType);
+
             var pageAction = this.Start().AddLeadForm(leadType);
 
             // Debug: Log current session values
@@ -931,6 +938,8 @@ Aimbase.Capture = (function (awaConfig) {
             }
 
             pageAction.Send();
+
+            console.log('AimBase Debug - SendLeadForm completed');
         },
 
         /**
