@@ -421,11 +421,11 @@ Aimbase.Analytics = (function (awaConfig) {
         
         // Prioritize session cookie values over URL parameters
         // This ensures UTM values persist across pages in the same session
-        parmsObject.medium = currentSessionCookie.medium || getParameterByName('utm_medium');
-        parmsObject.campaign = currentSessionCookie.campaign || getParameterByName('utm_campaign');
-        parmsObject.source = currentSessionCookie.source || getParameterByName('utm_source');
-        parmsObject.term = currentSessionCookie.term || getParameterByName('utm_term');
-        parmsObject.content = currentSessionCookie.content || getParameterByName('utm_content');
+        parmsObject.medium = (currentSessionCookie && currentSessionCookie.medium) || getParameterByName('utm_medium');
+        parmsObject.campaign = (currentSessionCookie && currentSessionCookie.campaign) || getParameterByName('utm_campaign');
+        parmsObject.source = (currentSessionCookie && currentSessionCookie.source) || getParameterByName('utm_source');
+        parmsObject.term = (currentSessionCookie && currentSessionCookie.term) || getParameterByName('utm_term');
+        parmsObject.content = (currentSessionCookie && currentSessionCookie.content) || getParameterByName('utm_content');
         
         parmsObject.ref = getReferrer();
         return parmsObject;
