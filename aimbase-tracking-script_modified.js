@@ -512,10 +512,16 @@ Aimbase.Analytics = (function (awaConfig) {
             paramObject.dealer = dealer;
         }
 
+        // Log what's being sent
+        console.log('AimBase Debug - Sending to ' + path + ':', paramObject);
+
         // Send via image beacon (1x1 pixel)
         var img = new Image(1, 1);
-        img.src = config.serviceAddress + path + "?" + serialize(paramObject);
+        var fullUrl = config.serviceAddress + path + "?" + serialize(paramObject);
+        console.log('AimBase Debug - Full URL:', fullUrl);
+        img.src = fullUrl;
         img.onload = function onImgLoad() {
+            console.log('AimBase Debug - Request completed for:', path);
             if (callback != undefined && typeof callback == "function") {
                 callback();
             }
@@ -602,8 +608,10 @@ Aimbase.Analytics = (function (awaConfig) {
      * Initializes the analytics library on page load
      */
     var init = function init() {
+        console.log('AimBase Debug - Script initializing...');
         setClientId();
         setServiceUrl();
+        console.log('AimBase Debug - Service URL set to:', config.serviceAddress);
 
         // Merge in any provided config
         if (awaConfig) {
@@ -615,10 +623,34 @@ Aimbase.Analytics = (function (awaConfig) {
 
         // Track this page visit
         trackPageVisit();
+
+        console.log('AimBase Debug - Initialization complete');
     };
 
     // Run initialization
     init();
+
+    // ========================================================================
+    // DEBUG HELPERS (remove in production)
+    // ========================================================================
+    window.AimBaseDebug = {
+        getSessionData: function() {
+            return currentSessionCookie;
+        },
+        getUTMValues: function() {
+            return {
+                source: Aimbase.Analytics.GetFieldValue('source'),
+                medium: Aimbase.Analytics.GetFieldValue('medium'),
+                campaign: Aimbase.Analytics.GetFieldValue('campaign'),
+                term: Aimbase.Analytics.GetFieldValue('term'),
+                content: Aimbase.Analytics.GetFieldValue('content')
+            };
+        },
+        testLeadForm: function(leadType) {
+            console.log('AimBase Debug - Testing SendLeadForm with type:', leadType);
+            Aimbase.Capture.SendLeadForm(leadType || 'test');
+        }
+    };
 
     // ========================================================================
     // PUBLIC API
@@ -865,24 +897,39 @@ Aimbase.Capture = (function (awaConfig) {
          */
         SendLeadForm: function (leadType) {
             var pageAction = this.Start().AddLeadForm(leadType);
-            
+
+            // Debug: Log current session values
+            console.log('AimBase Debug - Session UTM values:', {
+                source: Aimbase.Analytics.GetFieldValue('source'),
+                medium: Aimbase.Analytics.GetFieldValue('medium'),
+                campaign: Aimbase.Analytics.GetFieldValue('campaign'),
+                term: Aimbase.Analytics.GetFieldValue('term'),
+                content: Aimbase.Analytics.GetFieldValue('content')
+            });
+
             // Extract and attach stored UTM parameters from session
+            // Note: UTM params are stored in session cookie with shortened keys
             if (Aimbase.Analytics.GetFieldValue('source')) {
                 pageAction.AddTag('utm_source', Aimbase.Analytics.GetFieldValue('source'));
+                console.log('AimBase Debug - Added utm_source:', Aimbase.Analytics.GetFieldValue('source'));
             }
             if (Aimbase.Analytics.GetFieldValue('medium')) {
                 pageAction.AddTag('utm_medium', Aimbase.Analytics.GetFieldValue('medium'));
+                console.log('AimBase Debug - Added utm_medium:', Aimbase.Analytics.GetFieldValue('medium'));
             }
             if (Aimbase.Analytics.GetFieldValue('campaign')) {
                 pageAction.AddTag('utm_campaign', Aimbase.Analytics.GetFieldValue('campaign'));
+                console.log('AimBase Debug - Added utm_campaign:', Aimbase.Analytics.GetFieldValue('campaign'));
             }
-            if (Aimbase.Analytics.GetFieldValue('utm_term')) {
-                pageAction.AddTag('utm_term', Aimbase.Analytics.GetFieldValue('utm_term'));
+            if (Aimbase.Analytics.GetFieldValue('term')) {
+                pageAction.AddTag('utm_term', Aimbase.Analytics.GetFieldValue('term'));
+                console.log('AimBase Debug - Added utm_term:', Aimbase.Analytics.GetFieldValue('term'));
             }
-            if (Aimbase.Analytics.GetFieldValue('utm_content')) {
-                pageAction.AddTag('utm_content', Aimbase.Analytics.GetFieldValue('utm_content'));
+            if (Aimbase.Analytics.GetFieldValue('content')) {
+                pageAction.AddTag('utm_content', Aimbase.Analytics.GetFieldValue('content'));
+                console.log('AimBase Debug - Added utm_content:', Aimbase.Analytics.GetFieldValue('content'));
             }
-            
+
             pageAction.Send();
         },
 
